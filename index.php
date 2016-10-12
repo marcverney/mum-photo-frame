@@ -21,25 +21,12 @@ if (!$dirHandle) {
     die('Cannot open the base directory');
 }
 
-// Root
+// XML declaration
 $doc = new DOMDocument('1.0', 'utf-8');
-
-// RSS
-$rss = $doc->createElement('rss');
-$rss->setAttribute('version', '2.0');
-$rss->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:media', 'http://search.yahoo.com/mrss/');
-$rss->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:openSearch', 'http://a9.com/-/spec/opensearchrss/1.0/');
-$doc->appendChild($rss);
-
-// Channel
-$channel = $doc->createElement('channel');
-$rss->appendChild($channel);
-$channel->appendChild($doc->createElement('title', RSS_TITLE));
-$channel->appendChild($doc->createElement('link', RSS_LINK));
-$channel->appendChild($doc->createElement('description', RSS_DESCRIPTION));
 
 // Items
 $count = 0;
+$items = $doc->createDocumentFragment();
 while (($filename = readdir($dirHandle)) !== false) {
     $imageInfo = getimagesize(BASE_DIR . $filename);
     if (!$imageInfo) {
@@ -61,13 +48,26 @@ while (($filename = readdir($dirHandle)) !== false) {
     $content->setAttribute('type',   $imageInfo['mime']);
     $group->appendChild($content);
 
-    $channel->appendChild($item);
+    $items->appendChild($item);
 }
 closedir($dirHandle);
 
-// OpenSearch pagination
+// RSS
+$rss = $doc->createElement('rss');
+$rss->setAttribute('version', '2.0');
+$rss->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:media', 'http://search.yahoo.com/mrss/');
+$rss->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:openSearch', 'http://a9.com/-/spec/opensearchrss/1.0/');
+$doc->appendChild($rss);
+
+// Channel
+$channel = $doc->createElement('channel');
+$rss->appendChild($channel);
+$channel->appendChild($doc->createElement('title', RSS_TITLE));
+$channel->appendChild($doc->createElement('link', RSS_LINK));
+$channel->appendChild($doc->createElement('description', RSS_DESCRIPTION));
 $channel->appendChild($doc->createElement('openSearch:totalResults', $count));
 $channel->appendChild($doc->createElement('openSearch:startIndex', 1));
+$channel->appendChild($items);
 
 // Output
 header('Content-type: application/xml');
