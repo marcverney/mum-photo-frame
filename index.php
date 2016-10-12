@@ -13,6 +13,7 @@ const RSS_LINK = 'https://www.example.com';
 const RSS_DESCRIPTION = 'Pictures for Mum\'s PhotoFrame';
 
 // Config validation
+$startIndex = $_GET['start'] ?? 1;
 if (!is_dir(BASE_DIR)) {
     die('The provided base directory does not exist');
 }
@@ -29,11 +30,18 @@ $count = 0;
 $items = $doc->createDocumentFragment();
 while (($filename = readdir($dirHandle)) !== false) {
     $imageInfo = getimagesize(BASE_DIR . $filename);
+
+    // Discard non-image files
     if (!$imageInfo) {
         continue;
     }
 
     $count++;
+
+    // Discard all images before $startIndex
+    if ($count < $startIndex) {
+        continue;
+    }
 
     $item = $doc->createElement('item');
 
@@ -66,7 +74,7 @@ $channel->appendChild($doc->createElement('title', RSS_TITLE));
 $channel->appendChild($doc->createElement('link', RSS_LINK));
 $channel->appendChild($doc->createElement('description', RSS_DESCRIPTION));
 $channel->appendChild($doc->createElement('openSearch:totalResults', $count));
-$channel->appendChild($doc->createElement('openSearch:startIndex', 1));
+$channel->appendChild($doc->createElement('openSearch:startIndex', $startIndex));
 $channel->appendChild($items);
 
 // Output
