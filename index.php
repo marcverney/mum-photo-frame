@@ -79,7 +79,12 @@ $channel->appendChild($doc->createElement('link', RSS_LINK));
 $channel->appendChild($doc->createElement('description', RSS_DESCRIPTION));
 $channel->appendChild($doc->createElement('openSearch:totalResults', $imagesFound));
 $channel->appendChild($doc->createElement('openSearch:startIndex', $startIndex));
-$channel->appendChild($items);
+
+// Items
+$itemCount = $imagesFound - $startIndex + 1;
+if ($itemCount) {
+    $channel->appendChild($items);
+}
 
 // Output
 header('Content-type: application/xml');
