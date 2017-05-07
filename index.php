@@ -26,22 +26,25 @@ if (!$dirHandle) {
 $doc = new DOMDocument('1.0', 'utf-8');
 
 // Items
-$count = 0;
+$imagesFound = 0;
 $items = $doc->createDocumentFragment();
 while (($filename = readdir($dirHandle)) !== false) {
-    $imageInfo = getimagesize(BASE_DIR . $filename);
-
-    // Discard non-image files
-    if (!$imageInfo) {
+    // Make sure $filename is an image file
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, BASE_DIR . $filename);
+    finfo_close($finfo);
+    if (strpos($mime, 'image') !== 0) {
         continue;
     }
-
-    $count++;
+    $imagesFound++;
 
     // Discard all images before $startIndex
-    if ($count < $startIndex) {
+    if ($imagesFound < $startIndex) {
         continue;
     }
+
+    // Get image dimensions
+    $imageInfo = getimagesize(BASE_DIR . $filename);
 
     $item = $doc->createElement('item');
 
@@ -60,6 +63,7 @@ while (($filename = readdir($dirHandle)) !== false) {
 }
 closedir($dirHandle);
 
+
 // RSS
 $rss = $doc->createElement('rss');
 $rss->setAttribute('version', '2.0');
@@ -73,7 +77,7 @@ $rss->appendChild($channel);
 $channel->appendChild($doc->createElement('title', RSS_TITLE));
 $channel->appendChild($doc->createElement('link', RSS_LINK));
 $channel->appendChild($doc->createElement('description', RSS_DESCRIPTION));
-$channel->appendChild($doc->createElement('openSearch:totalResults', $count));
+$channel->appendChild($doc->createElement('openSearch:totalResults', $imagesFound));
 $channel->appendChild($doc->createElement('openSearch:startIndex', $startIndex));
 $channel->appendChild($items);
 
