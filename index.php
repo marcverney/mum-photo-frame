@@ -13,7 +13,7 @@ const RSS_LINK = 'https://www.example.com';
 const RSS_DESCRIPTION = 'Pictures for Mum\'s PhotoFrame';
 
 // Config validation
-$startIndex = $_GET['start'] ?? 1;
+$startIndex = isset($_GET['start']) && $_GET['start'] ? $_GET['start'] : 1;
 if (!is_dir(BASE_DIR)) {
     die('The provided base directory does not exist');
 }
