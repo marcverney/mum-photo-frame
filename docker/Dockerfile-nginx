@@ -1,0 +1,19 @@
+FROM nginx:1.10
+
+WORKDIR /etc/nginx
+
+RUN openssl req -x509 -nodes \
+        -days    1000 \
+        -newkey  rsa:2048 \
+        -keyout  /etc/ssl/certs/mv-photoframe.key \
+        -out     /etc/ssl/certs/mv-photoframe.crt \
+        -subj    "/C=ES/ST=Castellon/L=Burriana/O=Marc Verney/OU=IT Department/CN=dev.mv-photoframe.com" \
+    && chmod 600 /etc/ssl/certs/mv-photoframe.key \
+    && chmod 644 /etc/ssl/certs/mv-photoframe.crt
+
+RUN openssl dhparam -dsaparam -out /etc/ssl/private/dhparam.pem 4096 \
+    && chmod 644 /etc/ssl/private/dhparam.pem
+
+RUN usermod -a -G www-data nginx
+
+RUN rm /etc/nginx/conf.d/default.conf

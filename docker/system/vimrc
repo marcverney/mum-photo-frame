@@ -1,0 +1,16 @@
+" Don't try to make Vim more more Vi-compatible
+set nocompatible
+
+" Indent with 4 spaces
+set expandtab
+set autoindent
+set softtabstop=4
+set shiftwidth=4
+
+" Syntax highlighting
+syntax on
+set background=dark
+
+" Relative line numbers except for current line
+set relativenumber
+set number
