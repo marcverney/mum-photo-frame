@@ -1,5 +1,4 @@
 #!/bin/sh
-# Inspired (but modified) by https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
 
 # Download installer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
