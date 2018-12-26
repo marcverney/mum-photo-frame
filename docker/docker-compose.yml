@@ -8,6 +8,13 @@ services:
             args:
                 - TIMEZONE=${TIMEZONE}
         image: marcv/mv-photo-frame
+        environment:
+            - BASE_DIR=${BASE_DIR}
+            - BASE_URL=${BASE_URL}
+            - FORMAT_OUTPUT=${FORMAT_OUTPUT}
+            - RSS_TITLE=${RSS_TITLE}
+            - RSS_LINK=${RSS_LINK}
+            - RSS_DESCRIPTION=${RSS_DESCRIPTION}
         ports:
             - ${WEB_PORT_HOST}:80
         volumes:

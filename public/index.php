@@ -28,12 +28,15 @@ $startIndex = $_GET['start'] ?? 1;
 if (!$baseUrl) {
     throw new \RuntimeException('Missing base url');
 }
-if (!$baseDirPath || !is_dir($baseDirPath)) {
-    throw new \RuntimeException("The base dir $baseDirPath is invalid");
-}
-$baseDir = opendir($baseDirPath);
-if (!$baseDir) {
-    throw new \RuntimeException("Cannot open base dir $baseDirPath");
+$baseDir = null;
+if ($baseDirPath) {
+    if (!is_dir($baseDirPath)) {
+        throw new \RuntimeException("The base dir $baseDirPath is invalid");
+    }
+    $baseDir = opendir($baseDirPath);
+    if (!$baseDir) {
+        throw new \RuntimeException("Cannot open base dir $baseDirPath");
+    }
 }
 
 // XML declaration

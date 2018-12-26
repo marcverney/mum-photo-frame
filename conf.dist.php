@@ -1,13 +1,21 @@
 <?php
-// Directory where the images are stored (trailing "/" required)
-const BASE_DIR = '/home/marc/Images/';
-// Base URL for all images (trailing "/" required)
-const BASE_URL = 'https://www.example.com/img/';
-// Should the output be nicely formatted with indentation and extra space?
-const FORMAT_OUTPUT = true;
-// Title for the RSS feed
-const RSS_TITLE = 'Mum\'s Pictures';
-// The URL to the HTML website corresponding to the feed
-const RSS_LINK = 'https://www.example.com';
-// Phrase or sentence describing the feed
-const RSS_DESCRIPTION = 'Pictures for Mum\'s PhotoFrame';
+
+return [
+    // Local directory where the images are stored (if any). Trailing "/" required.
+    'BASE_DIR' => '/home/marc/Images/',
+
+    // Base URL for all images. Trailing "/" required.
+    'BASE_URL' => 'https://www.example.com/img/',
+
+    // Should the RSS output be nicely formatted with indentation and extra space?
+    'FORMAT_OUTPUT' => true,
+
+    // Title for the RSS feed
+    'RSS_TITLE' => 'My pictures',
+
+    // The URL to the HTML website corresponding to the feed
+    'RSS_LINK' => 'https://www.example.com',
+
+    // Phrase or sentence describing the feed
+    'RSS_DESCRIPTION' => 'Pictures for my photo frame'
+];
