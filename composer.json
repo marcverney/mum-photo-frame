@@ -1,0 +1,27 @@
+{
+    "name": "marcverney/mv-photoframe",
+    "type": "library",
+    "description": "A simple PHP script to build an RSS 2.0 image feed for a PhotoFrame.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marc Verney",
+            "email": "marc@marcverney.net"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "ext-json": "*",
+        "ext-dom": "*",
+        "ext-fileinfo": "*",
+        "aws/aws-sdk-php": "^3.62"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
