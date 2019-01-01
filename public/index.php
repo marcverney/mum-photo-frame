@@ -3,40 +3,59 @@ declare(strict_types=1);
 
 namespace App;
 
+use Aws\S3\S3Client;
+
+require '../vendor/autoload.php';
+
 const CONF_FILE_PATH = 'conf.php';
 
 $conf = file_exists(CONF_FILE_PATH)
     ? require CONF_FILE_PATH
     : [
-        'baseDir' => getenv('BASE_DIR'),
         'baseUrl' => getenv('BASE_URL'),
         'formatOutput' => getenv('FORMAT_OUTPUT'),
         'rssTitle' => getenv('RSS_TITLE'),
         'rssLink' => getenv('RSS_LINK'),
-        'rssDescription' =>  getenv('RSS_DESCRIPTION')
+        'rssDescription' =>  getenv('RSS_DESCRIPTION'),
+        'dir' => getenv('DIR'),
+        's3BucketName' => getenv('S3_BUCKET_NAME'),
+        's3BucketRegion' => getenv('S3_BUCKET_REGION')
     ];
 
-$baseDirPath = $conf['baseDir'] ?? null;
-$baseUrl = $conf['baseUrl'] ?? null;
-$formatOutput = $conf['formatOutput'] ?? false;
+$dir = (string) $conf['dir'];
+$baseUrl = (string) $conf['baseUrl'];
+$s3BucketName = (string) $conf['s3BucketName'];
+$s3BucketRegion = (string) $conf['s3BucketRegion'];
+$formatOutput = (string) $conf['formatOutput'];
 $rssTitle = $conf['rssTitle'] ?? 'Pictures';
 $rssLink = $conf['rssLink'] ?? 'https://www.example.com';
 $rssDescription = $conf['rssDescription'] ?? 'Pictures';
 $startIndex = $_GET['start'] ?? 1;
 
-// Config validation
-if (!$baseUrl) {
-    throw new \RuntimeException('Missing base url');
+// Authorization
+if (!isset($_GET['password']) || $_GET['password'] !== getenv('PASSWORD')) {
+    die('Invalid password');
 }
-$baseDir = null;
-if ($baseDirPath) {
-    if (!is_dir($baseDirPath)) {
-        throw new \RuntimeException("The base dir $baseDirPath is invalid");
-    }
-    $baseDir = opendir($baseDirPath);
-    if (!$baseDir) {
-        throw new \RuntimeException("Cannot open base dir $baseDirPath");
-    }
+
+// Walker instantiation
+$walker = null;
+
+if ($dir) {
+    require '../src/DirectoryWalker.php';
+    $walker = new DirectoryWalker($dir, $baseUrl);
+} elseif ($s3BucketName) {
+    require '../src/S3BucketWalker.php';
+
+    $s3Client = new S3Client([
+        'version' => 'latest',
+        'region' => $s3BucketRegion
+    ]);
+
+    $walker = new S3BucketWalker($s3Client, $s3BucketName);
+}
+
+if ($walker === null) {
+    die('Could not instantiate a walker. Please review configuration.');
 }
 
 // XML declaration
@@ -45,23 +64,8 @@ $doc = new \DOMDocument('1.0', 'utf-8');
 // Items
 $imagesFound = 0;
 $items = $doc->createDocumentFragment();
-while (($filename = readdir($baseDir)) !== false) {
-    // Make sure $filename is an image file
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime = finfo_file($finfo, BASE_DIR . $filename);
-    finfo_close($finfo);
-    if (strpos($mime, 'image') !== 0) {
-        continue;
-    }
+foreach ($walker->walk() as $url) {
     $imagesFound++;
-
-    // Discard all images before $startIndex
-    if ($imagesFound < $startIndex) {
-        continue;
-    }
-
-    // Get image dimensions
-    $imageInfo = getimagesize(BASE_DIR . $filename);
 
     $item = $doc->createElement('item');
 
@@ -70,16 +74,12 @@ while (($filename = readdir($baseDir)) !== false) {
 
     $content = $doc->createElement('media:content');
     $content->setAttribute('medium', 'image');
-    $content->setAttribute('url',    BASE_URL . $filename);
-    $content->setAttribute('width',  $imageInfo[0]);
-    $content->setAttribute('height', $imageInfo[1]);
-    $content->setAttribute('type',   $imageInfo['mime']);
+    $content->setAttribute('url', $url);
+    $content->setAttribute('type', 'image/jpeg');
     $group->appendChild($content);
 
     $items->appendChild($item);
 }
-closedir($baseDir);
-
 
 // RSS
 $rss = $doc->createElement('rss');
@@ -91,19 +91,16 @@ $doc->appendChild($rss);
 // Channel
 $channel = $doc->createElement('channel');
 $rss->appendChild($channel);
-$channel->appendChild($doc->createElement('title', RSS_TITLE));
-$channel->appendChild($doc->createElement('link', RSS_LINK));
-$channel->appendChild($doc->createElement('description', RSS_DESCRIPTION));
-$channel->appendChild($doc->createElement('openSearch:totalResults', $imagesFound));
-$channel->appendChild($doc->createElement('openSearch:startIndex', $startIndex));
+$channel->appendChild($doc->createElement('title', $rssTitle));
+$channel->appendChild($doc->createElement('link', $rssLink));
+$channel->appendChild($doc->createElement('description', $rssDescription));
+$channel->appendChild($doc->createElement('openSearch:totalResults', (string) $imagesFound));
+$channel->appendChild($doc->createElement('openSearch:startIndex', (string) $startIndex));
 
 // Items
-$itemCount = $imagesFound - $startIndex + 1;
-if ($itemCount) {
-    $channel->appendChild($items);
-}
+$channel->appendChild($items);
 
 // Output
 header('Content-type: application/xml');
-$doc->formatOutput = FORMAT_OUTPUT;
+$doc->formatOutput = $formatOutput;
 echo $doc->saveXML();

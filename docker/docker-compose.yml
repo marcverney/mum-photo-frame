@@ -9,12 +9,17 @@ services:
                 - TIMEZONE=${TIMEZONE}
         image: marcv/mv-photo-frame
         environment:
-            - BASE_DIR=${BASE_DIR}
             - BASE_URL=${BASE_URL}
             - FORMAT_OUTPUT=${FORMAT_OUTPUT}
             - RSS_TITLE=${RSS_TITLE}
             - RSS_LINK=${RSS_LINK}
             - RSS_DESCRIPTION=${RSS_DESCRIPTION}
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - PASSWORD=${PASSWORD}
+            - DIR=${DIR}
+            - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+            - S3_BUCKET_REGION=${S3_BUCKET_REGION}
         ports:
             - ${WEB_PORT_HOST}:80
         volumes:
