@@ -22,6 +22,7 @@ $conf = file_exists(CONF_FILE_PATH)
         's3BucketRegion' => getenv('S3_BUCKET_REGION')
     ];
 
+$password = getenv('PASSWORD');
 $dir = (string) $conf['dir'];
 $baseUrl = (string) $conf['baseUrl'];
 $s3BucketName = (string) $conf['s3BucketName'];
@@ -31,11 +32,15 @@ $rssTitle = $conf['rssTitle'] ?? 'Pictures';
 $rssLink = $conf['rssLink'] ?? 'https://www.example.com';
 $rssDescription = $conf['rssDescription'] ?? 'Pictures';
 $startIndex = $_GET['start'] ?? 1;
+$ssl = getenv('SSL');
+$scheme = $ssl ? 'https' : 'http';
 
 // Authorization
-if (!isset($_GET['password']) || $_GET['password'] !== getenv('PASSWORD')) {
+if (!isset($_GET['password']) || $_GET['password'] !== $password) {
     die('Invalid password');
 }
+
+// Scheme
 
 // Walker instantiation
 $walker = null;
@@ -74,7 +79,10 @@ foreach ($walker->walk() as $url) {
 
     $content = $doc->createElement('media:content');
     $content->setAttribute('medium', 'image');
-    $content->setAttribute('url', $url);
+    $content->setAttribute(
+        'url',
+        preg_replace('/^https?/', $scheme, $url)
+    );
     $content->setAttribute('type', 'image/jpeg');
     $group->appendChild($content);
 
